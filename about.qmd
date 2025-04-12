@@ -1,0 +1,4 @@
+---
+title: About
+---
+I was born and raised in South Africa and completed a B.Sc(Hons) (Statistics) and MA (Economics) at the University of Cape Town. After spending two years at Simon Fraser University, I transferred to the University of Rochester where I completed a Phd in Economics (Econometrics, Finance). I was a tenure track Assistant Professor at Emory University for five years before moving to New York City to work in the Financial Services Industry. I spent 10 years building prepay and default models for non-agency MBS at Citi and AllianceBernstein followed by 10 years in quantitative risk management at TIAA.

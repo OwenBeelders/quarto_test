@@ -1,0 +1,26 @@
+{
+  "index.qmd": {
+    "index.html": "3e70676d"
+  },
+  "blog/first-post/index.qmd": {
+    "index.html": "64a52f47"
+  },
+  "blog/second-post/index.qmd": {
+    "index.html": "859a0607"
+  },
+  "blog/third-post/index.ipynb": {
+    "index.html": "54a209c3"
+  },
+  "projects/index.qmd": {
+    "index.html": "d584de0b"
+  },
+  "talks.qmd": {
+    "talks.html": "c045e1dd"
+  },
+  "blog/index.qmd": {
+    "index.html": "89c64165"
+  },
+  "about.qmd": {
+    "about.html": "e8c370d1"
+  }
+}

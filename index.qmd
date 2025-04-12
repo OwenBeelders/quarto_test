@@ -1,0 +1,9 @@
+---
+title: "Owen Beelders"
+subtitle: "Quant Modeller/Data Scientist"
+# Photo taken on phone in prospect park
+image: 20221021_ProspectPark.jpg
+about: # https://quarto.org/docs/websites/website-about.html
+  template: solana
+---
+
