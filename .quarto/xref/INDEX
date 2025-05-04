@@ -22,5 +22,8 @@
   },
   "about.qmd": {
     "about.html": "e8c370d1"
+  },
+  "blog/post-20250504/index.qmd": {
+    "index.html": "91b02a7c"
   }
 }

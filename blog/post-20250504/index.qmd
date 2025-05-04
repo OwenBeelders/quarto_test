@@ -1,0 +1,71 @@
+---
+title: "Trade Data"
+description: "The key steps for using the Census Bureau's trade data API"
+author: "Owen"
+date: "5/4/2025"
+image: "Census_Bureau_API.png"
+categories:
+  - Science
+  - Data
+---
+
+The Census Bureau has an API for downloading trade data. There are five components to the API:
+
+- The base url 
+- The choice of imports or exports
+- The endpoint, i.e. one of nine commodity classification systems. 
+- The variables you want to download
+-  The filter
+
+Let's begin with a simple example. What are the US exports of Soybeans in the most recent FT900 trade report?
+
+The base url is "https://api.census.gov/data/timeseries/intltrade" and then there are four levels of information
+
+1. We are choosing "exports"
+2. We are using the "enduse" classification system for the ft900 report
+3. The variables are:
+- "E_ENDUSE_SDESC" - a short description of the commodity
+- "ALL_VAL_MO" - the dollar amount exported
+- "CTY_CODE" - the country code for the soy exports
+- "CTY_NAME" - the country name for the exports
+4. The filter
+- "E_ENDUSE=111110"  - the enduse code for soybeans
+- "time=2025-03" - the year and month 
+
+```{r}
+#| echo: true
+#| eval: false
+
+base <- "https://api.census.gov/data/timeseries/intltrade"
+
+l1 <- "exports"
+l2 <- "enduse"
+l3 <- "E_ENDUSE_SDESC,ALL_VAL_MO,CTY_CODE,CTY_NAME"
+l4 <- "time=2025-03&E_ENDUSE=111110"
+
+api_call <- paste0(base,l1,"/",l2,"?get=",l3,"&",l4)
+
+```
+
+The api_call has the following url:
+
+https://api.census.gov/data/timeseries/intltrade/exports/enduse/?get=E_ENDUSE_SDESC,ALL_VAL_MO,CTY_CODE,CTY_NAME&time=2025-03&E_ENDUSE=111110
+
+The api call can be pasted into a browser to download the data, but it is easier to read into R and create a data frame.
+
+```{r}
+#| echo: true
+#| eval: false
+
+library (httr)
+library (jsonlite)
+
+res <- GET(api_call)
+
+predf <- fromJSON(rawToChar(res$content))
+
+df <- as.data.frame(predf[2:nrow(predf), ])
+names(df) <- predf[1, ]
+
+
+```
