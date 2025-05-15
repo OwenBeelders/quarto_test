@@ -1,0 +1,44 @@
+---
+title: "Trade Data"
+description: "The key steps for using the Census Bureau's trade data API"
+author: "Owen"
+date: "5/4/2025"
+image: "Census_Bureau_API.png"
+categories:
+  - Science
+  - Data
+format: html
+---
+
+Let's test the api within the blog
+
+```{r}
+
+library (httr)
+library (jsonlite)
+#library (tidyverse)
+#library (ggplot2)
+
+base <- "https://api.census.gov/data/timeseries/intltrade/"
+
+l1 <- "imports"
+l2 <- "hs"
+l3 <- "I_COMMODITY_SDESC,GEN_VAL_YR,CTY_CODE,CTY_NAME"
+l4 <- "time=from+2024-01&I_COMMODITY=87150*"
+
+api_call <- paste0(base,l1,"/",l2,"?get=",l3,"&",l4)
+
+res <- GET(api_call)
+
+predf <- fromJSON(rawToChar(res$content))
+
+df <- as.data.frame(predf[2:nrow(predf), ])
+names(df) <- predf[1, ]
+
+df$GEN_VAL_YR <- as.numeric(df$GEN_VAL_YR)
+
+head(df)
+
+
+
+```

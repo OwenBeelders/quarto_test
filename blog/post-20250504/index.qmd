@@ -45,11 +45,13 @@ l4 <- "time=2025-03&E_ENDUSE=111110"
 
 api_call <- paste0(base,l1,"/",l2,"?get=",l3,"&",l4)
 
+print(api_call)
+
 ```
 
 The api_call has the following url:
 
-https://api.census.gov/data/timeseries/intltrade/exports/enduse/?get=E_ENDUSE_SDESC,ALL_VAL_MO,CTY_CODE,CTY_NAME&time=2025-03&E_ENDUSE=111110
+https://api.census.gov/data/timeseries/intltrade/exports/enduse?get=E_ENDUSE_SDESC,ALL_VAL_MO,CTY_CODE,CTY_NAME&time=2025-03&E_ENDUSE=111110
 
 The api call can be pasted into a browser to download the data, but it is easier to read into R and create a data frame.
 
@@ -62,10 +64,13 @@ library (jsonlite)
 
 res <- GET(api_call)
 
+x <-rawToChar(res$content)
+
 predf <- fromJSON(rawToChar(res$content))
 
 df <- as.data.frame(predf[2:nrow(predf), ])
 names(df) <- predf[1, ]
 
+head(df)
 
 ```

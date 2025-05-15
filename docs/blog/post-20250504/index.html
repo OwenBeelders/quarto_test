@@ -233,10 +233,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>l3 <span class="ot">&lt;-</span> <span class="st">"E_ENDUSE_SDESC,ALL_VAL_MO,CTY_CODE,CTY_NAME"</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>l4 <span class="ot">&lt;-</span> <span class="st">"time=2025-03&amp;E_ENDUSE=111110"</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>api_call <span class="ot">&lt;-</span> <span class="fu">paste0</span>(base,l1,<span class="st">"/"</span>,l2,<span class="st">"?get="</span>,l3,<span class="st">"&amp;"</span>,l4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>api_call <span class="ot">&lt;-</span> <span class="fu">paste0</span>(base,l1,<span class="st">"/"</span>,l2,<span class="st">"?get="</span>,l3,<span class="st">"&amp;"</span>,l4)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(api_call)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The api_call has the following url:</p>
-<p>https://api.census.gov/data/timeseries/intltrade/exports/enduse/?get=E_ENDUSE_SDESC,ALL_VAL_MO,CTY_CODE,CTY_NAME&amp;time=2025-03&amp;E_ENDUSE=111110</p>
+<p>https://api.census.gov/data/timeseries/intltrade/exports/enduse?get=E_ENDUSE_SDESC,ALL_VAL_MO,CTY_CODE,CTY_NAME&amp;time=2025-03&amp;E_ENDUSE=111110</p>
 <p>The api call can be pasted into a browser to download the data, but it is easier to read into R and create a data frame.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span> (httr)</span>
@@ -244,10 +246,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">GET</span>(api_call)</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>predf <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="fu">rawToChar</span>(res<span class="sc">$</span>content))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span><span class="fu">rawToChar</span>(res<span class="sc">$</span>content)</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(predf[<span class="dv">2</span><span class="sc">:</span><span class="fu">nrow</span>(predf), ])</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(df) <span class="ot">&lt;-</span> predf[<span class="dv">1</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>predf <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="fu">rawToChar</span>(res<span class="sc">$</span>content))</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(predf[<span class="dv">2</span><span class="sc">:</span><span class="fu">nrow</span>(predf), ])</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(df) <span class="ot">&lt;-</span> predf[<span class="dv">1</span>, ]</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
