@@ -1,0 +1,34 @@
+---
+title: "Comitting project to github from RStudio"
+description: "Use the terminal window"
+author: "Owen"
+date: "7/12/2025"
+categories:
+  - blog updates
+format: 
+  html:
+    link-external-newwindow: true
+---
+
+# Introduction
+
+I have struggled to blog regularly. As a consequence, I run into technology issues. On July 10th I wrote a blog and used the "Environment, Histor, .." pane to commit my changes to git hub, but I received the following error
+
+
+![Commit Error](Screenshot 2025-07-12 104045.png) 
+
+I shelved the decision to commit and waited until Saturday morning to learn more about gpg. I found the github pages to set up the key etc. and then I turned to RStudio to figure out how to add the key.  A google search lead me to the fact that RStudio is set  up for ssh and not gpg. I then set up a new ssh key within RStudio using the Tools > Global Options > Git/SVN > Create SSH Key steps.
+
+![Create ssh key](Screenshot 2025-07-12 104630.png) 
+
+What I also remembered is that when I watched a video on setting up quarto for blogging, commits were done via the terminal window.  So what worked for me is the following two lines at the command line: 
+
+git commit "commit message"
+
+git push origin main
+
+where you specify the relevant "commit message".
+
+It's actually quite simple if you know what you are doing, and waste countless hours if you don't.
+
+

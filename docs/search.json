@@ -39,7 +39,7 @@
     "href": "blog/index.html",
     "title": "Blog",
     "section": "",
-    "text": "Order By\n       Default\n         \n          Date - Oldest\n        \n         \n          Date - Newest\n        \n         \n          Title\n        \n         \n          Author\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\nDate\n\n\nTitle\n\n\nAuthor\n\n\n\n\n\n\nMay 22, 2021\n\n\nFirst Post\n\n\nAlicia \n\n\n\n\nJul 10, 2025\n\n\nIntroduction BLS CPI data\n\n\nOwen \n\n\n\n\nMay 23, 2021\n\n\nSecond Post\n\n\nAlicia \n\n\n\n\nMay 24, 2021\n\n\nThird Blog Post\n\n\nAlicia \n\n\n\n\nMay 4, 2025\n\n\nTrade Data\n\n\nOwen \n\n\n\n\nMay 4, 2025\n\n\nTrade Data\n\n\nOwen \n\n\n\n\n\nNo matching items"
+    "text": "Order By\n       Default\n         \n          Date - Oldest\n        \n         \n          Date - Newest\n        \n         \n          Title\n        \n         \n          Author\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\nDate\n\n\nTitle\n\n\nAuthor\n\n\n\n\n\n\nJul 12, 2025\n\n\nComitting project to github from RStudio\n\n\nOwen \n\n\n\n\nMay 22, 2021\n\n\nFirst Post\n\n\nAlicia \n\n\n\n\nJul 10, 2025\n\n\nIntroduction BLS CPI data\n\n\nOwen \n\n\n\n\nMay 23, 2021\n\n\nSecond Post\n\n\nAlicia \n\n\n\n\nMay 24, 2021\n\n\nThird Blog Post\n\n\nAlicia \n\n\n\n\nMay 4, 2025\n\n\nTrade Data\n\n\nOwen \n\n\n\n\nMay 4, 2025\n\n\nTrade Data\n\n\nOwen \n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "blog/post-20250515/index.html",
@@ -89,5 +89,12 @@
     "title": "Introduction BLS CPI data",
     "section": "Miscellaneous",
     "text": "Miscellaneous\n\nitem descriptions Each item code is defined."
+  },
+  {
+    "objectID": "blog/post-20250712/Index.html",
+    "href": "blog/post-20250712/Index.html",
+    "title": "Comitting project to github",
+    "section": "",
+    "text": "Introduction\nI have struggled to blog regularly. As a consequence, I run into technology issues. On July 10th I wrote a blog and used the “Environment, Histor, ..” pane to commit my changes to git hub, but I received the following error\n\n\n\nCommit Error\n\n\nI shelved the decision to commit and waited until Saturday morning to learn more about gpg. I found the github pages to set up the key etc. and then I turned to RStudio to figure out how to add the key. A google search lead me to the fact that RStudio is set up for ssh and not gpg. I then set up a new ssh key within RStudio using the Tools &gt; Global Options &gt; Git/SVN &gt; Create SSH Key steps.\n\n\n\nCreate ssh key\n\n\nWhat I also remembered is that when I watched a video on setting up quarto for blogging commits were done via the terminal window. So what worked for me is the following two lines at the command line\ngit commit “commit message”\ngit push origin main\nIt’s actually quite simple if you know what you are doing, and waste countless hours if you don’t."
   }
 ]
