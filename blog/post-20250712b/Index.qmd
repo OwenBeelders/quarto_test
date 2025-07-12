@@ -1,0 +1,193 @@
+---
+title: "BLS CPI data: Understanding the cu.series file"
+description: "The structure of the file and the key variables."
+author: "Owen"
+date: "7/12/2025"
+categories:
+  - CPI
+format: 
+  html:
+    link-external-newwindow: true
+---
+
+```{r}
+#| label: load_packages
+#| echo: false
+#| warning: false
+#| message: false
+
+library(quantmod)
+library(tidyverse)
+library(ggpubr)
+library(gt)
+
+path <- path <- "G:\\My Drive\\Research\\Inflation\\"
+
+```
+
+## Loading the cu.series file
+
+I downloaded the cu.series.txt file from  <https://download.bls.gov/pub/time.series/cu/> and converted the tab-delimited file to a csv. The file has 8,103 rows and 13 variables. The thirteen variables and first two rows are printed below.
+
+```{r}
+#| label: load cu.series.txt
+#| echo: false
+#| warning: false
+#| message: false
+
+dfs <- read.csv(paste0(path,"cu.series.csv"), header = TRUE)
+
+dfs$series_id <- str_trim(dfs$series_id)
+
+for(j in (1:nrow(dfs))){
+  
+  if(dfs$area_code[j] == "0"){dfs$area_code[j] = "0000"
+  }else{
+  
+    if(nchar(dfs$area_code[j]) == 3){dfs$area_code[j] <- paste0("0",dfs$area_code[j])}
+  }
+}
+
+#print(dim(dfs) )
+names(dfs)
+
+dfs[1:2,] %>% gt()
+
+#table (dfs$seasonal)
+#table (dfs$periodicity_code)
+#table (dfs$base_code)
+
+
+```
+
+## Details about the dataset
+- There are 8,103 series id's and 13 variables
+- The seasonal and periodicity_code are categorical variables each containing two cases. 
+  - The seasonal variable equals "S" for seasonally adjusted and "U" for unadjusted. There are 325 seasonally adjusted series
+and 7,778 unadjusted series.
+  - The periodicity code is "R" for monthly and "S" for semi-annual. There are 4,202 series with monthly data and 3,901 with
+semi-annual data.
+- The item codes are useful for selecting the same category of CPI across geographic region or city. For example, the item code "SAH" represents "housing"; by selecting all the rows with item code "SAH" we can select all the housing code CPI indexes.
+- Area codes
+  - There are 58 unique area codes
+  - The area code "0000" is the U.S. city average
+  - It is only the area code "0000" that has seasonally adjusted CPI indexes
+  - The numerical area codes running from "0100" to "0490" represent the census regions <https://www2.census.gov/geo/pdfs/maps-data/maps/reference/us_regdiv.pdf>
+  - The four largest regions are Northeast ("0100"), Midwest ("0200"),  South ("0300") and West ("0400")
+  - Census divisions within each region are represented by the first two digits of the region and an additional two digits for the division. For example, the Northeast is "0100" and Division 1, New England is "0110" and Division 2, Middle Atlantic is "0120", etc.
+  - The area codes of Class D urban areas (populations between 2,500 and 49,999) begin with the letter D.
+  - The area codes of Class B/C urban areas (population less than 2.5 million) begin with the letter N.
+  - The area codes of Class A urban areas (population more than 2.5 million) begin with the letter S.
+- The base period is the year and month that the index equals 100.
+- The begin and end period is a string beginning with the letter "M" for the month and two digits that represent the month of the year, e.g. "M04" denotes April. In some datasets, the variable "M13" is used to denote the average value for the year.
+
+
+
+
+
+```{r}
+#| label: area code
+#| echo: false
+#| warning: false
+#| message: false
+
+
+x <- table(dfs$area_code)
+xx <- as.data.frame(x)
+
+names(xx) <- c("area_code","Count")
+
+xx$area_code <- as.character (xx$area_code)
+
+
+for(k in (1:nrow(xx) )) {
+  if(xx[k,1] == "0") {xx[k,1] <- "0000"
+  }else{
+    if (nchar(xx[k,1]) < 4) {xx[k,1] <- paste0("0",xx[k,1]) }
+    }
+} 
+
+
+
+#unique(dfs$area_code) #58 unique area codes
+
+dfssa0 <- dfs[dfs$item_code == "SA0", ]
+
+#dim(dfssa0)
+
+#View(dfssa0)
+
+dfa <- read.table(paste0 (path, "cu.area.txt"), sep="\t", header = TRUE)
+
+dfax <- merge(dfa[,c("area_code","area_name")],xx,by.x = "area_code", by.y = "area_code", all.x=TRUE)
+#dfax %>% gt()
+
+dfax$SA <- numeric(nrow(dfax))
+dfax$NSA <- numeric(nrow(dfax))
+dfax$Monthly <- numeric(nrow(dfax))
+dfax$`Semi-Annual` <- numeric(nrow(dfax))
+
+
+for(k in (1:nrow(dfax))){
+  
+  dfsx <- dfs[dfs$area_code == dfax$area_code[k],]
+  
+  #how many are 
+  xs <- table(dfsx$seasonal)
+  
+  if(nrow(xs) == 2){
+    dfax$SA[k] <- as.numeric(xs[1])
+    dfax$NSA[k] <- as.numeric(xs[2])
+  }else{
+      if(nrow(xs) == 1){
+        
+        if(names(xs) == "S"){
+          dfax$SA[k]  <- as.numeric(xs[1])
+          dfax$NSA[k] <- 0
+          }
+    
+        if(names(xs) == "U"){
+          dfax$SA[k]  <- 0
+          dfax$NSA[k] <- as.numeric(xs[1])
+          }
+        
+      }
+    }
+  
+  xp <- table(dfsx$periodicity_code)
+  
+    if(nrow(xp) == 2){
+    dfax$Monthly[k] <- as.numeric(xp[1])
+    dfax$`Semi-Annual`[k] <- as.numeric(xp[2])
+  }else{
+      if(nrow(xp) == 1){
+        
+        if(names(xp) == "S"){
+          dfax$Monthly[k]  <- as.numeric(xp[1])
+          dfax$`Semi-Annual`[k] <- 0
+          }
+    
+        if(names(xp) == "U"){
+          dfax$Monthly[k]  <- 0
+          dfax$`Semi-Annual`[k] <- as.numeric(xp[1])
+          }
+        
+      }
+    }
+  
+  
+}
+
+
+dfax %>% gt()
+
+```
+
+
+## Miscellaneous links
+
+- Aggregation level <https://www.bls.gov/cpi/additional-resources/cpi-item-aggregation.htm>
+
+- Info about area indexes  <https://www.bls.gov/opub/hom/cpi/presentation.htm>
+
+- The list of CPI indexes that are published monthly <https://www.bls.gov/cpi/additional-resources/index-publication-level.htm>
