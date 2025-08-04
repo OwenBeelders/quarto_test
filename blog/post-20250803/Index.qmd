@@ -1,0 +1,43 @@
+---
+title: "Decomposing the All items (Headline) CPI Index"
+description: "Decompositions of the key CPI indexes"
+author: "Owen"
+date: "8/3/2025"
+categories:
+  - CPI
+format: 
+  html:
+    link-external-newwindow: true
+---
+
+
+## Introduction
+
+The [Relative Importance](https://www.bls.gov/cpi/tables/relative-importance/#RIData) page of the BLS CPI website provides a spreadsheet of the weights of the components of the CPI index. These weights can be used to decompose aggregate indexes into changes of their components.
+
+The most important decomposition of the CPI index is that of headline inflation into core inflation plus energy and food inflation.
+
+What other decompositions exist?
+
+First, by focusing on the "Special aggregate indexes" in table 1 of the Relative Importance spreadsheet we can construct the following groups of indexes that add up to the "All items" index. The easiest starting point is the group of indexes whose title begins with "All items less..."
+
+- All items less food
+- All items less shelter
+- All items less medical care
+- All items less energy
+- All items less food and energy
+
+Beside the above five indexes and the decomposition of Headline (all items) into core, we also have a breakdown of headline into commodities (goods) and services inflation.
+
+![](Decomposition of All items Headline and Core.png)
+
+
+Second, if we ignore the "Special aggregate indexes" and group all the "Indent Level" 1 indexes, we obtain the following set of sub-indexes that add up to 100:
+
+![](CPI-level_1_rel_imp.png)
+
+These eight indexes can be further decomposed into the key contributors. (We have also included the decomposition of food into food at home and away from home, thus there are nine groupings.)
+
+![](Table of 8 part 1.png)
+
+![](Table of 8 part 2.png)
