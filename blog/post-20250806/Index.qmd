@@ -1,0 +1,122 @@
+---
+title: "Decomposing Headline and Core CPI"
+description: "Decompositions of the headline and core CPI indexes"
+author: "Owen"
+date: "8/6/2025"
+categories:
+  - CPI
+format: 
+  html:
+    link-external-newwindow: true
+---
+
+## Introduction
+
+The first purpose of the decomposition is develop an understand of what is driving changes in headline and core inflation. The second purpose is to have a handy reference.
+
+```{r}
+#| label: load packages and data
+#| warning: False
+#| message: False
+#| echo: False
+
+library(readxl)
+library(gt)
+
+path <- "C:/Users/Owen/OneDrive/Documents/quarto_test/blog/post-20250806/"
+
+head0 <- readxl::read_excel(paste0(path,"blog_data_20250806.xlsx"),sheet = "Headline_0")
+
+head1 <- readxl::read_excel(paste0(path,"blog_data_20250806.xlsx"),sheet = "Headline_1")
+
+core0 <- readxl::read_excel(paste0(path,"blog_data_20250806.xlsx"),sheet = "Core_0")
+
+housexcle <- readxl::read_excel(paste0(path,"blog_data_20250806.xlsx"),sheet = "Housing_excl_energy")
+
+tranexcle <- readxl::read_excel(paste0(path,"blog_data_20250806.xlsx"),sheet = "Transp_excl_energy")
+
+energy0 <- readxl::read_excel(paste0(path,"blog_data_20250806.xlsx"),sheet = "Energy_0")
+
+energy1 <- readxl::read_excel(paste0(path,"blog_data_20250806.xlsx"),sheet = "Energy_1")
+
+hhenergy <- readxl::read_excel(paste0(path,"blog_data_20250806.xlsx"),sheet = "HH_energy")
+
+energy_comm <- readxl::read_excel(paste0(path,"blog_data_20250806.xlsx"),sheet = "Energy_comm")
+
+food <- readxl::read_excel(paste0(path,"blog_data_20250806.xlsx"),sheet = "Food")
+
+
+```
+
+Core Inflation excludes energy and food. Food is defined as all food and non-beverages, i.e., it excludes alchoholic beverages.
+
+```{r}
+#| label: core and headline
+#| warning: False
+#| message: False
+#| echo: False
+
+head0 %>% gt()
+
+```
+We can decompose core CPI, All items less food and energy, as follows:
+
+```{r}
+#| echo: False
+core0 %>% gt()
+```
+
+Housing excluding household energy and transportation excluding energy are derived as follows:
+
+```{r}
+#| echo: False
+
+housexcle %>% gt()
+
+tranexcle %>% gt()
+
+```
+
+## Food and Energy in headline inflation
+
+Food is decomposed into food at home and food away from home.
+```{r}
+#| echo: False
+
+food %>% gt()
+```
+
+Energy can be decomposed into energy from commodities and services
+
+```{r}
+#| echo: False
+
+energy0 %>% gt()
+```
+
+and also as the sum of household energy and motor fuel.
+
+```{r}
+#| echo: False
+
+energy1 %>% gt()
+```
+Household energy is made up of two components
+```{r}
+#| echo: False
+
+hhenergy %>% gt()
+```
+There is no further breakdown of energy services that is found within the housing category.
+
+Energy commodities are made up of types of fuel
+```{r}
+#| echo: False
+
+energy_comm %>% gt()
+```
+
+
+
+
+
