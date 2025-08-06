@@ -48,7 +48,7 @@ food <- readxl::read_excel(paste0(path,"blog_data_20250806.xlsx"),sheet = "Food"
 
 ```
 
-Core Inflation excludes energy and food. Food is defined as all food and non-beverages, i.e., it excludes alchoholic beverages.
+Core Inflation excludes energy and food. Food is defined as all food and non-alcoholic beverages, i.e., it excludes alcoholic beverages.
 
 ```{r}
 #| label: core and headline
