@@ -1,0 +1,206 @@
+---
+title: "Census Bureau API: Baby Carriages"
+description: "example of a trade data API call"
+format: 
+  html:
+     link-external-newwindow: true
+editor: source
+author: "Owen"
+date: "8/11/2025"
+categories:
+  - Science
+  - Data
+---
+
+
+## Introduction
+
+Torsten Slok, Apollo's Chief Economist, post the import China for a number of products at his [daily spark](https://www.apolloacademy.com/will-there-be-fireworks-on-the-4th-of-july/) website. The first product category is baby carriages. 97% of baby carriages are imported from China. Can we verify this?
+
+## The Census Bureau Trade Data API
+
+The API call has five components: a common base url and four additional requirements. The base url is
+
+<https://api.census.gov/data/timeseries/intltrade/>
+
+and the additional four requirements are:
+
+1.  The selection of type of trade, imports or exports.
+2.  The selection of one of nine endpoints, i.e. one of nine commodity classification systems.
+3.  The list of variables to be downloaded
+4.  The query for the API request
+
+## Baby Carriage codes
+
+First, to confirm the import of baby carriages from China, our focus is on imports.
+
+Second, we will use the classification of baby carriages within the harmonized tariff system (HTS). The [reference](https://www.census.gov/foreign-trade/reference/index.html) page of the trade data of the Census bureau has a concordance for [imports](https://www.census.gov/foreign-trade/schedules/b/2025/imp-code.txt) and [exports](https://www.census.gov/foreign-trade/schedules/b/2025/exp-code.txt). One can read the file into R and grep for "carriages" or use ctrl-F to search for "carriages" on the webpage. We find the following two HTS codes:
+
+-   8715000020 BABY CARRIAGES (INCLUDING STROLLERS)
+-   8715000040 PARTS OF BABY CARRIAGES
+
+We will use the first four digits to download both categories.
+
+Third, we can search for the variables we want to download using the following url:
+
+<https://api.census.gov/data/timeseries/intltrade/imports/hs/variables.html>
+
+where the selection of "imports" is consistent with our first choice above and "hs" is the abbreviation for the HTS.
+
+We will select the following variables:
+
+-   I_COMMODITY: the commodity code for the import
+-   I_COMMODITY_SDESC: the short description for the import associated with the commodity code
+-   GEN_VAL_YR: 15-digit Year-to-Date General Imports, Total Value
+-   CTY_CODE: the country code
+-   CTY_NAME: the country name
+
+The fourth item is the filter or query: we want the trade data from January 2024 and we want to select all the 10-digit hs codes that fall within the 4-digit HS code "8715".
+
+## R code
+
+In the code below, we list the base url and the four additional inputs, l1 to l4. These five strings are concated uisng the paste0 function. It is important to note that the string "?get=" follows the endpoint, each variable is separated by a comma and the clauses of the query are separated by ampersands. The asterisk at the end of "8715\*" is a wild card that allows all ten digit HTS commodities that begin with the same 4-digits to be pulled.
+
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+#| error: true
+#| eval: true
+
+base <- "https://api.census.gov/data/timeseries/intltrade/"
+
+l1 <- "imports"
+l2 <- "hs"
+l3 <- "I_COMMODITY_SDESC,GEN_VAL_YR,CTY_CODE,CTY_NAME"
+l4 <- "time=from+2024-01&I_COMMODITY=87150*"
+
+api_call <- paste0(base,l1,"/",l2,"?get=",l3,"&",l4)
+
+print(api_call)
+
+```
+
+The api call can be cut-and-pasted into a browser to retrieve the data or one can use the GET function of the httr package to retrieve the data so that it can be manipulated in R.
+
+The jsonlite package is required because the API returns data in the JSON format.
+
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+#| error: true
+#| eval: true
+
+library(httr)
+library(jsonlite)
+library(tidyverse)
+library(ggplot2)
+library(gt)
+
+res <- GET(api_call)
+
+predf <- fromJSON(rawToChar(res$content))
+
+df <- as.data.frame(predf[2:nrow(predf), ])
+names(df) <- predf[1, ]
+
+head(df)
+```
+
+![head(df)](head_df.png) We can confirm that the API call has returned the data we requested including a 6-digit aggregation.
+
+```{r}
+#| eval: true
+
+df %>% dplyr::count(I_COMMODITY,I_COMMODITY_SDESC) %>% gt()
+```
+
+![](gt_table.png)
+
+The variable GEN_VAL_YR, the year-to-date value of imports, is converted to numeric because it is read in as a string. By selecting the "time" variable that has the 12th month, we can obtain the annual value of imports.
+
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+#| error: true
+#| eval: true
+
+df$GEN_VAL_YR <- as.numeric(df$GEN_VAL_YR)
+
+dfa <- df[substring(df$time,6,7)=="12",]
+
+```
+
+When downloading country code (CTY_CODE) and country name (CTY_NAME), we also obtain imports by various regions, e.g. "European Union", Pacific Rim Countries", etc. The table available in Appendix E of the [API User Guide](https://www.census.gov/foreign-trade/reference/guides/Guide_to_International_Trade_Datasets.pdf) lists the country groupings. It is useful to save this table as a csv file so that it can be used to omit country groupings when not needed. In addition to the country groupings, total imports is also included and this can be excluded if not needed.
+
+![](Appendix_E.png)
+
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+#| error: true
+#| eval: true
+
+path <- "G:\\My Drive\\Research\\Trade Data\\"
+fn <- paste0(path,"Appendix_E_Country_Grouping_Codes.csv")
+
+country_groupings <- read.csv(fn)
+
+dfac <- dfa[!(dfa$CTY_CODE %in% country_groupings$CTY_CODE),]
+
+dfac <- dfac[grepl("TOTAL",dfac$CTY_NAME) == FALSE,]
+
+#head(dfac)
+```
+
+![head(df)](head_dfac.png)
+
+Finally, we can use the 6-digit HS code to select the aggregate of baby strollers (8715000020) and baby stroller parts (8715000040)
+
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+#| error: true
+#| eval: true
+
+dfac6 <- dfac[dfac$I_COMMODITY == "871500",]
+
+total_imports <- sum(dfac6$GEN_VAL_YR)
+
+dfac6$perc <- round(100*dfac6$GEN_VAL_YR/total_imports,2)
+
+dfac6 <- dfac6[order(dfac6$perc,decreasing = TRUE),]
+
+#head(dfac6)
+
+
+```
+
+![head(df)](head_dfac6.png)
+
+We find that 97% of baby strollers and bay stroller parts were imported from China in 2024.
+
+What proportion of the total imports \$`{r} round(sum(dfac6$GEN_VAL_YR)/1e6,2)`M is baby strollers and what is parts?
+
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+#| error: true
+#| eval: true
+
+strollers <-  dfac[dfac$I_COMMODITY == "8715000020",]
+parts <-  dfac[dfac$I_COMMODITY == "8715000040",]
+
+sm <- round( sum(strollers$GEN_VAL_YR)/1e6,2)
+pm <- round(sum(parts$GEN_VAL_YR)/1e6,2)
+
+pp <- round(100*(pm/(sm+pm)),2)
+
+```
+
+We import \$`{r} sm`M strollers and \$`{r} pm`M parts, so parts only make up `{r} pp`% of the total.
