@@ -1,0 +1,283 @@
+---
+title: ETA 539 - Weekly Claims and Extended Benefits Trigger Data"
+description: "introduction to the data available in ETA 539 "
+author: "Owen Beelders"
+date: "10/14/2025"
+categories:
+  - initial claims
+format: 
+  html:
+    link-external-newwindow: true
+---
+
+
+## Introduction
+
+The ETA 539 is available from the [data downloads page](https://oui.doleta.gov/unemploy/DataDownloads.asp#ETA_539) of the [Employment and Training Administration](https://www.dol.gov/agencies/eta).
+
+The following definitions are from the [UI REPORTS HANDBOOK NO. 401 ](https://oui.doleta.gov/dmstree/handbooks/401/i_1.pdf), the "ETA 539 Weekly Claims and Extended Benefits Trigger Date".
+
+1. IC  - State UI Initial Claims less intrastate transitionals.
+2. FIC - UCFE - no UI Initial Claims. ([UCFE](https://oui.doleta.gov/unemploy/unemcomp.asp) = "Unemployment compensation for Federal employees")
+3. XIC - UCX only Initial Claims  ([UCX](https://oui.doleta.gov/unemploy/ucx.asp) is Unemployment Compensation for Ex-servicemembers.)
+4. WSIC - STC or workshare total initial claims. ([STC](https://oui.doleta.gov/unemploy/stc.asp) is Short-Time Compensation.)
+5. WSEIC - STC or workshare equivalent initial claims 
+6. CW - State UI adjusted continued weeks (CW) claimed 
+7. FCW - UCFE-no UI adjusted continued weeks claimed 
+8. XCW - UCX only adjusted continued weeks claimed 
+9. WSCW - STC or workshare total continued weeks claimed
+10. WSECW - STC or workshare equivalent continued weeks claimed 
+11.	EBT - Total continued weeks claimed under the [Federal/State Extended Benefit Program](https://oui.doleta.gov/unemploy/extenben.asp)--includes all intrastate and interstate continued weeks claimed filed from an agent State under the State UI, UCFE and UCX programs. 
+12.	EBUI - That part of EBT which represents only State UI weeks claimed under the Federal/State EB program. 
+13.	ABT - Total continued weeks claimed under a [State additional benefit program](https://oui.doleta.gov/unemploy/pdf/extensions.html) for those States which have such a program. (Includes UCFE and UCX.) 
+14.	ABUI - That part of ABT which represents only State UI additional continued weeks claimed for those States which have such a program. 
+15.	AT - Average adjusted Total Continued Weeks Claimed. Report the average of the sum of the CW and WSECW figures for the most recent calendar week of unemployment experience and the immediately previous 12 calendar weeks of unemployment experience (CW+WSECW) divided by 13; i.e., 
+
+$$
+AT =  \frac{1}{13} \sum_{i=1}^{13} \left( CWI_{i} + WSECW_{i} \right)
+$$
+
+16.	CE -  Covered Employment. Report the 12-month average monthly covered employment for the first 4 of the last 6 completed calendar quarters prior to the end of the last week of the current 13-week period to which the insured unemployment data relate. This figure will change only once each quarter, as specified in section F.9. above.
+17.	R - Rate of Insured Unemployment. Report the rate of insured unemployment for the current 13-week period. The insured unemployment rate for a 13-week period is the result of dividing the average adjusted total continued weeks claimed (AT) by the covered employment (CE); i.e.,
+$$
+R = \frac{AT}{CE}
+$$
+18.	AR - Average Rate of Insured Unemployment in Prior Two Years. Report the average of the rates of insured unemployment for the corresponding 13-week periods in the prior 2 years (See E.6. above). The average rates in each of the 2 prior years is computed as the sum of the two rates divided by 2; i.e., 
+$$
+AR = \frac{R1 + R2}{2}
+$$
+where $R1$ and $R2$ refer to the rates for the corresponding 13-week period of 1 year ago and 2 years ago, respectively.
+19.	P. Current Rate as Percent of Average Rate in Prior Two Years. This percent is defined as:
+$$
+P = \frac{R}{AR}
+$$
+20.	Status (B or E) - Indicate the beginning (B) or ending (E) of a State extended  benefit period. 
+21.	Change Date - If Status has changed since the prior week, enter the date the change is effective. 
+
+
+Note: [Chapter 4](https://oui.doleta.gov/unemploy/pdf/uilawcompar/2023/special.pdf), "Extensions and Special Programs", has a lot of information about the abbreviations used above.
+
+
+```{r}
+#| label: load_packages 
+#| echo: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+library(quantmod)
+library(gt)
+
+path <- "G:\\My Drive\\Research\\DOLETA\\"
+
+```
+
+```{r}
+#| label: read in data
+#| echo: false
+#| warning: false
+#| message: false
+
+#This data is by state
+
+dat <- readxl::read_excel(paste0(path,"ar539_20250724.xlsx"),sheet = "Data" )
+
+names(dat) <- c("State","Report_period_ending", "Week_Number","Reflected_Week_ending","IC","FIC","XIC",
+                "WSIC","WSEIC","CW","FCW","XCW","WSCW","WSECW","EBT","EBUI","ABT","ABUI","AT","CE","R",
+                "AR","P","Status","Status_Change_Date","curdate","priorwk_pub", "priorwk")
+
+#str(dat)
+
+ldat <- dat %>% pivot_longer(cols = c("IC","FIC","XIC","WSIC","WSEIC","CW","FCW","XCW","WSCW","WSECW",
+                                    "EBT","EBUI","ABT","ABUI","AT","CE","R","AR","P"),
+                             names_to="ecovar", values_to = "value")
+
+check <- ldat %>% group_by(Report_period_ending) %>%
+  summarize(n=n())
+
+#Create a df of state level IC
+
+dat$Report_period_ending <- as.Date(dat$Report_period_ending)
+dat$Reflected_Week_ending <-  as.Date(dat$Reflected_Week_ending )
+dat$Status_Change_Date <- as.Date(dat$Status_Change_Date)
+dat$curdate <-  as.Date(dat$curdate)
+dat$priorwk_pub <-  as.Date(dat$priorwk_pub)
+dat$priorwk <- as.Date(dat$priorwk)
+
+dfic <- dat[,c("State","Report_period_ending", "Reflected_Week_ending","curdate","IC")] %>% pivot_wider(names_from="State", values_from="IC")
+
+
+
+dfic$icag = rowSums(dfic[,4:ncol(dfic)],na.rm = T)
+
+dfic8602 <- dfic[dfic$Reflected_Week_ending > "1986-02-01",]
+
+#View(dfic8602)
+
+#plot(dfic8602$icag, type = 'l')
+
+#write.csv(dfic8602,paste0(path,"dfic8602.csv"))
+
+## Last three weeks
+
+
+
+ltw <- c(dat$Report_period_ending[nrow(dat) - 54] ,"2025-06-28"  ,"2025-07-05", "2025-07-12","2025-07-19")
+
+dltw <- dat[dat$Report_period_ending  %in% ltw,]
+
+d3 <- dat[dat$Report_period_ending == "2025-07-05",]
+
+num_list <- c("IC","FIC","XIC", "WSIC","WSEIC","CW","FCW","XCW","WSCW","WSECW","EBT","EBUI","ABT","ABUI","AT","CE","R",
+                "AR","P")
+
+
+Report <- dltw  %>% group_by(Report_period_ending) %>%
+  summarize( IC = sum(IC),
+             FIC = sum(FIC),
+             XIC = sum(XIC),
+             WSIC = sum(WSIC),
+             WSEIC = sum(WSEIC),
+             CW = sum(CW),
+             FCW = sum(FCW),
+             XCW = sum(XCW),
+             WSCW = sum(WSCW),
+             WSECW = sum(WSECW),
+             EBT = sum(EBT),
+             EBUI = sum(EBUI),
+             ABT = sum(ABT),
+             ABUI = sum(ABUI),
+             AT = sum(AT),
+             CE = sum(CE),
+             R = mean(R),
+             AR = mean(AR),
+             P = mean(P)) %>%
+  as.data.frame()
+
+Report$IC_rep = Report$IC + Report$WSEIC
+
+#View(Report)
+
+#Note:  IC + WSEIC = total claims reported in weekly report
+
+# INITIAL CLAIMS FILED IN FEDERAL PROGRAMS (UNADJUSTED) 
+
+#UCFE = FIC
+#UCX = XIC
+
+```
+
+
+
+
+```{r}
+#| echo: False
+
+#Aggregating across many years
+
+dat88 <- dat[dat$Report_period_ending > "1988-03-01",]
+
+Report <- dat88  %>% group_by(Report_period_ending) %>%
+  summarize( IC = sum(IC),
+             FIC = sum(FIC),
+             XIC = sum(XIC),
+             WSIC = sum(WSIC),
+             WSEIC = sum(WSEIC),
+             CW = sum(CW),
+             FCW = sum(FCW),
+             XCW = sum(XCW),
+             WSCW = sum(WSCW),
+             WSECW = sum(WSECW),
+             EBT = sum(EBT),
+             EBUI = sum(EBUI),
+             ABT = sum(ABT),
+             ABUI = sum(ABUI),
+             AT = sum(AT),
+             CE = sum(CE),
+             R = mean(R),
+             AR = mean(AR),
+             P = mean(P)) %>%
+  as.data.frame()
+
+
+ggplot(Report,aes(x=`Report_period_ending`, y=IC)) + geom_line() +
+    theme_light() +
+  ggtitle("IC: State UI Initial claims")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=FIC)) + geom_line() +
+    theme_light()+
+  ggtitle("FIC: UCFE - no UI initial Claims (Federal Employees)")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=XIC)) + geom_line()+
+    theme_light()+
+  ggtitle("XIC: UCX only initial Claims")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=WSIC)) + geom_line()+
+    theme_light()+
+  ggtitle("WSIC: STC or workshare total initial claims")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=WSEIC)) + geom_line()+
+    theme_light()+
+  ggtitle("WSEIC: STC or workshare equivalent initial claims")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=CW)) + geom_line()+
+    theme_light() +
+  ggtitle("CW: State UI adjusted continued weeks claimed")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=FCW)) + geom_line()+
+    theme_light() +
+  ggtitle("FCW: UCFE-no UI adjusted continued weeks claimed  ")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=XCW)) + geom_line()+
+    theme_light() +
+  ggtitle("XCW: UCX only adjusted continued weeks claimed")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=WSCW)) + geom_line()+
+    theme_light() +
+  ggtitle("WSCW: STC or workshare total continued weeks claimed")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=WSECW)) + geom_line()+
+    theme_light() +
+  ggtitle("WSECW: STC or workshare equivalent cont. weeks claimed ")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=EBT)) + geom_line()+
+    theme_light() +
+  ggtitle("EBT: Total cont. weeks claimed under the Fed./State Extended Benefit Program")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=EBUI)) + geom_line()+
+    theme_light() +
+  ggtitle("EBUI: Only State UI weeks claimed under the Federal/State EB program.")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=ABT)) + geom_line()+
+    theme_light() +
+  ggtitle("ABT: Total cont. weeks claimed under a State additional benefit program")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=ABUI)) + geom_line()+
+    theme_light() +
+  ggtitle("ABUI: Part of ABT which represents only State UI add. cont. weeks claimed")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=AT)) + geom_line()+
+    theme_light() +
+  ggtitle("AT: Average adjusted Total Continued Weeks Claimed")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=CE)) + geom_line()+
+    theme_light() +
+  ggtitle("CE: Covered Employment")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=R)) + geom_line()+
+    theme_light() +
+  ggtitle("R: Rate of Insured Unemployment. ")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=AR)) + geom_line()+
+    theme_light() +
+  ggtitle("AR: Average Rate of Insured Unemployment in prior two years. ")
+
+ggplot(Report,aes(x=`Report_period_ending`, y=R)) + geom_line()+
+    theme_light() +
+  ggtitle("P: Current Rate as Percent of Average Rate in Prior Two Years. ")
+
+
+```
+
